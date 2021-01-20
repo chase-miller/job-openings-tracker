@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using MoreLinq;
 
 namespace OpeningsTracker
 {
@@ -11,11 +13,13 @@ namespace OpeningsTracker
     {
         private readonly LeverClient _leverClient;
         private readonly Database _database;
+        private readonly OpeningsTrackerScriptConfig _config;
 
-        public OpeningsTrackerScript(LeverClient leverClient, Database database)
+        public OpeningsTrackerScript(LeverClient leverClient, Database database, OpeningsTrackerScriptConfig config)
         {
             _leverClient = leverClient;
             _database = database;
+            _config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -23,7 +27,9 @@ namespace OpeningsTracker
             var databaseFile = await _database.GetDatabaseFile();
 
             var newItems = (await _leverClient.GetPostings())
-                .ExceptAlreadyProcessed(databaseFile.AlreadyProcessedIds);
+                .ExceptAlreadyProcessed(databaseFile.AlreadyProcessedIds)
+                .ExceptBlacklistedDepartments(_config.DepartmentBlacklist)
+                .ExceptBlacklistedTeams(_config.TeamBlacklist);
 
             var processResults = await Process(newItems);
 
@@ -56,20 +62,36 @@ namespace OpeningsTracker
 
     static class LeverPostingExtensions
     {
-        public static IEnumerable<LeverPosting> ExceptAlreadyProcessed(this IEnumerable<LeverPosting> postings, List<string> alreadyProcessedIds)
-        {
-            var asList = postings?.ToList() ?? new List<LeverPosting>();
+        public static IEnumerable<LeverPosting> ExceptAlreadyProcessed(this IEnumerable<LeverPosting> postings, IEnumerable<string> alreadyProcessedIds) =>
+            from posting in postings
+            join alreadyProcessedId in alreadyProcessedIds on posting.Id equals alreadyProcessedId 
+                into gj
+            from subPosting in gj.DefaultIfEmpty()        // left outer join
+            where subPosting == null                      // only get postings where the id isn't in the list of already processed ids
+            select posting;
 
-            var newIds = asList
-                .Select(p => p.Id)
-                .Except(alreadyProcessedIds);
+        public static IEnumerable<LeverPosting> ExceptBlacklistedDepartments(this IEnumerable<LeverPosting> postings,
+            IEnumerable<string> blacklistedDepartments) =>
+            from posting in postings
+            join blacklistedDept in blacklistedDepartments on posting.Categories.Department equals blacklistedDept
+                into gj
+            from subPosting in gj.DefaultIfEmpty() // left outer join
+            where subPosting == null
+            select posting;
 
-            return asList.Join(newIds, posting => posting.Id, id => id, (posting, _) => posting);
-        }
+        public static IEnumerable<LeverPosting> ExceptBlacklistedTeams(this IEnumerable<LeverPosting> postings,
+            IEnumerable<string> blacklistedTeams) =>
+            from posting in postings
+            join blacklistedTeam in blacklistedTeams on posting.Categories.Team equals blacklistedTeam
+                into gj
+            from subPosting in gj.DefaultIfEmpty() // left outer join
+            where subPosting == null
+            select posting;
     }
 
     class OpeningsTrackerScriptConfig
     {
-        public List<string> CategoryBlacklist { get; set; } = new List<string>();
+        public IList<string> DepartmentBlacklist { get; set; } = new List<string>();
+        public IList<string> TeamBlacklist { get; set; } = new List<string>();
     }
 }

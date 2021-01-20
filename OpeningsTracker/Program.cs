@@ -26,21 +26,23 @@ namespace OpeningsTracker
                 )
                 .ConfigureServices((hostContext, services) =>
                     services
-                        .AddHostedService<CronJob>(sp => new CronJob(sp.GetService<OpeningsTrackerScript>(), sp.GetService<IConfiguration>().GetSection("cronConfig").Get<CronJobConfig>()))
-                        .AddTransient<OpeningsTrackerScript>()
+                        .AddHostedService<CronJob>(sp => new CronJob(
+                            sp.GetService<OpeningsTrackerScript>(), 
+                            sp.GetService<IConfiguration>().GetSection("cronConfig").Get<CronJobConfig>() ?? new CronJobConfig()
+                        ))
+                        .AddTransient<OpeningsTrackerScript>(sp => new OpeningsTrackerScript(
+                            sp.GetService<LeverClient>(), 
+                            sp.GetService<Database>(), 
+                            sp.GetService<IConfiguration>().GetSection("scriptConfig").Get<OpeningsTrackerScriptConfig>() ?? new OpeningsTrackerScriptConfig()
+                        ))
                         .AddHttpClient()
-                        .AddTransient<Database>(sp => new Database(sp.GetService<IConfiguration>().GetValue<string>("openingsTrackerDatabaseFile")))
-                        .AddTransient<LeverClient>((sp) =>
-                        {
-                            var leverClientConfig = sp.GetService<IConfiguration>().GetSection("leverClientConfig").Get<LeverClientConfig>();
-                            
-                            var leverClient = new LeverClient(
-                                sp.GetService<IHttpClientFactory>().CreateClient($"{typeof(LeverClient)}"),
-                                leverClientConfig
-                            );
-
-                            return leverClient;
-                        })
+                        .AddTransient<Database>(sp => new Database(
+                            sp.GetService<IConfiguration>().GetValue<string>("openingsTrackerDatabaseFile")
+                        ))
+                        .AddTransient<LeverClient>((sp) => new LeverClient(
+                            sp.GetService<IHttpClientFactory>().CreateClient($"{typeof(LeverClient)}"),
+                            sp.GetService<IConfiguration>().GetSection("leverClientConfig").Get<LeverClientConfig>() ?? new LeverClientConfig()
+                        ))
                 );
     }
 }
