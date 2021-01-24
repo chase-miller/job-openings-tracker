@@ -2,24 +2,27 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-namespace OpeningsTracker
+namespace OpeningsTracker.Core
 {
-    class CronJobConfig
+    public class CronJobConfig
     {
-        public TimeSpan DelayTimeSpan { get; set; }
+        public TimeSpan JobFrequencyTimespan { get; set; }
         public bool OnlyRunOnce { get; set; }
     }
 
-    class CronJob : BackgroundService
+    public class CronJob : BackgroundService
     {
         private readonly OpeningsTrackerScript _script;
         private readonly CronJobConfig _config;
+        private readonly ILogger<CronJob> _logger;
 
-        public CronJob(OpeningsTrackerScript script, CronJobConfig config)
+        public CronJob(OpeningsTrackerScript script, CronJobConfig config, ILogger<CronJob> logger)
         {
             _script = script;
             _config = config;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -27,17 +30,15 @@ namespace OpeningsTracker
             if (_config.OnlyRunOnce)
             {
                 await _script.StartAsync(stoppingToken);
-                Console.WriteLine();
-                Console.WriteLine("End of script (OnlyRunOnce is set to true)");
+                _logger.LogWarning("End of script (OnlyRunOnce is set to true)");
                 return;
             }
 
             do
             {
                 await _script.StartAsync(stoppingToken);
-                Console.WriteLine();
-                Console.WriteLine($"Waiting {_config.DelayTimeSpan:g} until next run...");
-                await Task.Delay(_config.DelayTimeSpan, stoppingToken);
+                _logger.LogInformation($"Waiting {_config.JobFrequencyTimespan:g} until next run...");
+                await Task.Delay(_config.JobFrequencyTimespan, stoppingToken);
             } while (!stoppingToken.IsCancellationRequested);
         }
     }

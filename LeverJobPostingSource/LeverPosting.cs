@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace OpeningsTracker
+namespace LeverJobPostingSource
 {
-    class LeverPosting
+    public class LeverPosting
     {
         public string Id { get; set; }
         public string HostedUrl { get; set; }
@@ -17,7 +17,7 @@ namespace OpeningsTracker
         public LeverCategory Categories { get; set; }
     }
 
-    class LeverCategory
+    public class LeverCategory
     {
         public string Commitment { get; set; }
         public string Department { get; set; }

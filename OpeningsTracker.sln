@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30104.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpeningsTracker", "OpeningsTracker\OpeningsTracker.csproj", "{D9387512-1BE9-4B9C-8D67-32229924436A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpeningsTracker", "OpeningsTracker\OpeningsTracker.csproj", "{D9387512-1BE9-4B9C-8D67-32229924436A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeverJobPostingSource", "LeverJobPostingSource\LeverJobPostingSource.csproj", "{CE5BDEE0-204B-4A59-8D36-A0EAFFAC5DC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{977159FA-922E-445A-94D0-51D53B3DE681}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{D9387512-1BE9-4B9C-8D67-32229924436A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9387512-1BE9-4B9C-8D67-32229924436A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9387512-1BE9-4B9C-8D67-32229924436A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE5BDEE0-204B-4A59-8D36-A0EAFFAC5DC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE5BDEE0-204B-4A59-8D36-A0EAFFAC5DC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE5BDEE0-204B-4A59-8D36-A0EAFFAC5DC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE5BDEE0-204B-4A59-8D36-A0EAFFAC5DC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{977159FA-922E-445A-94D0-51D53B3DE681}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{977159FA-922E-445A-94D0-51D53B3DE681}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{977159FA-922E-445A-94D0-51D53B3DE681}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{977159FA-922E-445A-94D0-51D53B3DE681}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

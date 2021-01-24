@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OpeningsTracker
+namespace OpeningsTracker.Core
 {
     public static class LinqExtensions
     {
