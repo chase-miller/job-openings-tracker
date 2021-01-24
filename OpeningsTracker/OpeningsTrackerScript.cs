@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using MoreLinq;
 
 namespace OpeningsTracker
 {
@@ -24,9 +23,9 @@ namespace OpeningsTracker
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            var databaseFile = await _database.GetDatabaseFile();
+            var databaseFile = await _database.GetDatabaseFile(cancellationToken);
 
-            var newItems = (await _leverClient.GetPostings())
+            var newItems = (await _leverClient.GetPostings(cancellationToken))
                 .ExceptAlreadyProcessed(databaseFile.AlreadyProcessedIds)
                 .ExceptBlacklistedDepartments(_config.DepartmentBlacklist)
                 .ExceptBlacklistedTeams(_config.TeamBlacklist);
@@ -63,30 +62,25 @@ namespace OpeningsTracker
     static class LeverPostingExtensions
     {
         public static IEnumerable<LeverPosting> ExceptAlreadyProcessed(this IEnumerable<LeverPosting> postings, IEnumerable<string> alreadyProcessedIds) =>
-            from posting in postings
-            join alreadyProcessedId in alreadyProcessedIds on posting.Id equals alreadyProcessedId 
-                into gj
-            from subPosting in gj.DefaultIfEmpty()        // left outer join
-            where subPosting == null                      // only get postings where the id isn't in the list of already processed ids
-            select posting;
+            postings.ExceptBy(
+                alreadyProcessedIds, 
+                posting => posting.Id,
+                alreadyProcessedId => alreadyProcessedId
+            );
 
-        public static IEnumerable<LeverPosting> ExceptBlacklistedDepartments(this IEnumerable<LeverPosting> postings,
-            IEnumerable<string> blacklistedDepartments) =>
-            from posting in postings
-            join blacklistedDept in blacklistedDepartments on posting.Categories.Department equals blacklistedDept
-                into gj
-            from subPosting in gj.DefaultIfEmpty() // left outer join
-            where subPosting == null
-            select posting;
+        public static IEnumerable<LeverPosting> ExceptBlacklistedDepartments(this IEnumerable<LeverPosting> postings, IEnumerable<string> blacklistedDepartments) =>
+            postings.ExceptBy(
+                blacklistedDepartments,
+                posting => posting.Categories.Department,
+                blacklistedDepartment => blacklistedDepartment
+            );
 
-        public static IEnumerable<LeverPosting> ExceptBlacklistedTeams(this IEnumerable<LeverPosting> postings,
-            IEnumerable<string> blacklistedTeams) =>
-            from posting in postings
-            join blacklistedTeam in blacklistedTeams on posting.Categories.Team equals blacklistedTeam
-                into gj
-            from subPosting in gj.DefaultIfEmpty() // left outer join
-            where subPosting == null
-            select posting;
+        public static IEnumerable<LeverPosting> ExceptBlacklistedTeams(this IEnumerable<LeverPosting> postings, IEnumerable<string> blacklistedTeams) =>
+            postings.ExceptBy(
+                blacklistedTeams,
+                posting => posting.Categories.Team,
+                blacklistedTeam => blacklistedTeam
+            );
     }
 
     class OpeningsTrackerScriptConfig

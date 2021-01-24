@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OpeningsTracker
@@ -21,13 +22,13 @@ namespace OpeningsTracker
             _fileLocation = fileLocation ?? throw new ArgumentNullException(nameof(fileLocation));
         }
 
-        public async Task<DatabaseFile> GetDatabaseFile()
+        public async Task<DatabaseFile> GetDatabaseFile(CancellationToken token)
         {
             if (!File.Exists(_fileLocation))
                 return await WriteDatabase(new DatabaseFile());
 
             await using var openStream = File.OpenRead(_fileLocation);
-            return await JsonSerializer.DeserializeAsync<DatabaseFile>(openStream);
+            return await JsonSerializer.DeserializeAsync<DatabaseFile>(openStream, null, token);
         }
 
         public async Task<DatabaseFile> WriteDatabase(DatabaseFile fileContents)

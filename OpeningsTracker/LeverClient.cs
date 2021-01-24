@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OpeningsTracker
@@ -26,13 +27,12 @@ namespace OpeningsTracker
             _config = config;
         }
 
-        public async Task<List<LeverPosting>> GetPostings()
+        public async Task<List<LeverPosting>> GetPostings(CancellationToken token)
         {
-            var response = await _client.GetAsync($"{_config.PostingsBaseUri}/olo");
+            var response = await _client.GetAsync($"{_config.PostingsBaseUri}/olo", token);
             response.EnsureSuccessStatusCode();
 
-            return await JsonSerializer.DeserializeAsync<List<LeverPosting>>(await response.Content.ReadAsStreamAsync(),
-                _serializerOptions);
+            return await JsonSerializer.DeserializeAsync<List<LeverPosting>>(await response.Content.ReadAsStreamAsync(), _serializerOptions, token);
         }
     }
 }
