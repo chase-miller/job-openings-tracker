@@ -16,7 +16,7 @@ namespace OpeningsTracker.Core
 
         public OpeningsTrackerScript(IJobPostingSource postingSource, Database database, OpeningsTrackerScriptConfig config, ILogger<OpeningsTrackerScript> logger)
         {
-            _postingSource = postingSource;
+            _postingSource = postingSource ?? throw new ArgumentNullException(nameof(postingSource));
             _database = database;
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _logger = logger;
