@@ -42,7 +42,7 @@ namespace OpeningsTracker.Core
                 // .ExceptAlreadyProcessed(alreadyProcessedIds)
                 .ToList();
 
-            var notificationResults = await Notify(newItems);
+            var notificationResults = await Notify(newItems, cancellationToken);
 
             var successes = notificationResults
                 .Where(r => r.success)
@@ -96,7 +96,7 @@ namespace OpeningsTracker.Core
             }
         }
 
-        private async Task<List<(JobPosting posting, bool success, Exception ex)>> Notify(IList<JobPosting> postings)
+        private async Task<List<(JobPosting posting, bool success, Exception ex)>> Notify(IList<JobPosting> postings, CancellationToken cancellationToken)
         {
             if (!postings.Any())
             {
@@ -108,7 +108,7 @@ namespace OpeningsTracker.Core
 
             foreach (var notifier in _notifiers)
             {
-                var result = await notifier.Notify(postings);
+                var result = await notifier.Notify(postings, cancellationToken);
                 notificationResults.AddRange(result);
             }
 

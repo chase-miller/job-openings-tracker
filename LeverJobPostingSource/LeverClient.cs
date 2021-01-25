@@ -25,7 +25,7 @@ namespace OpeningsTracker.JobPostingSources.Lever
 
         public async Task<List<LeverPosting>> GetPostings(CancellationToken token)
         {
-            var response = await _client.GetAsync($"{_config.PostingsBaseUri}/olo", token);
+            var response = await _client.GetAsync($"{_config.PostingsUri}", token);
             response.EnsureSuccessStatusCode();
 
             return await JsonSerializer.DeserializeAsync<List<LeverPosting>>(await response.Content.ReadAsStreamAsync(), _serializerOptions, token);

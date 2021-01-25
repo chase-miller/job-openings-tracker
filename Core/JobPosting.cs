@@ -10,5 +10,6 @@ namespace OpeningsTracker.Core
         public DateTime? CreatedAtDTime { get; set; }
         public string HostedUrl { get; set; }
         public string SourceSystemId { get; set; }
+        public string ShortDescription { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,6 +25,13 @@ namespace OpeningsTracker.Runners.BackgroundJob
                     logger
                         .SetMinimumLevel(LogLevel.Information)
                         .AddConsole()
+                )
+                .ConfigureHostConfiguration(builder =>
+                    builder
+                        .AddJsonFile("appsettings.json")
+                        .AddJsonFile(Environment.GetEnvironmentVariable("OpeningsTracker_SettingsFileLocation") ?? "/dev/null/fake.json", optional: true, reloadOnChange: true)
+                        .AddEnvironmentVariables(prefix: "OpeningsTracker_")
+                        .AddCommandLine(args)
                 )
                 .ConfigureServices((hostContext, services) =>
                     services
