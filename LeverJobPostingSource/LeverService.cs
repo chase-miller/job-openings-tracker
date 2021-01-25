@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,11 +16,15 @@ namespace OpeningsTracker.JobPostingSources.Lever
         {
             _client = client;
             _config = config;
+
+            if (!config.PostingsUris.Any())
+                throw new ArgumentOutOfRangeException(nameof(LeverConfig.PostingsUris), $"At least one {nameof(LeverConfig.PostingsUris)} must be provided");
         }
 
         public async Task<List<JobPosting>> GetPostings(CancellationToken token)
         {
-            var postings = (await _client.GetPostings(token))
+            var postings = (await GetPostingsAcrossCompanies(token))
+                .SelectMany(p => p)
                 .ExceptBlacklistedDepartments(_config.DepartmentBlacklist)
                 .ExceptBlacklistedTeams(_config.TeamBlacklist);
 
@@ -34,6 +39,19 @@ namespace OpeningsTracker.JobPostingSources.Lever
                     Text = p.Text
                 })
                 .ToList();
+        }
+
+        private async Task<List<List<LeverPosting>>> GetPostingsAcrossCompanies(CancellationToken token)
+        {
+            var postings = new List<List<LeverPosting>>();
+
+            foreach (var companyUri in _config.PostingsUris)
+            {
+                var results = await _client.GetPostings(companyUri, token);
+                postings.Add(results);
+            }
+
+            return postings;
         }
 
         public string PostingSourceId => "Lever_00cb6681d5934702aaf613bf59f32880";

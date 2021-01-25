@@ -39,9 +39,7 @@ namespace OpeningsTracker.Core
         {
             var databaseFile = await _dataStore.GetDatabaseEntities(cancellationToken);
 
-            var newItems = (await FindNewJobPostings(databaseFile.AlreadyProcessedIds, cancellationToken))
-                // .ExceptAlreadyProcessed(alreadyProcessedIds)
-                .ToList();
+            var newItems = await FindNewJobPostings(databaseFile.AlreadyProcessedIds, cancellationToken);
 
             var notificationResults = await Notify(newItems, cancellationToken);
 

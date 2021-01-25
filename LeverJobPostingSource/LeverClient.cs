@@ -10,22 +10,20 @@ namespace OpeningsTracker.JobPostingSources.Lever
     public class LeverClient
     {
         private readonly HttpClient _client;
-        private readonly LeverConfig _config;
 
         private readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         };
 
-        public LeverClient(HttpClient client, LeverConfig config)
+        public LeverClient(HttpClient client)
         {
             _client = client;
-            _config = config;
         }
 
-        public async Task<List<LeverPosting>> GetPostings(CancellationToken token)
+        public async Task<List<LeverPosting>> GetPostings(string postingUri, CancellationToken token)
         {
-            var response = await _client.GetAsync($"{_config.PostingsUri}", token);
+            var response = await _client.GetAsync($"{postingUri}", token);
             response.EnsureSuccessStatusCode();
 
             return await JsonSerializer.DeserializeAsync<List<LeverPosting>>(await response.Content.ReadAsStreamAsync(), _serializerOptions, token);

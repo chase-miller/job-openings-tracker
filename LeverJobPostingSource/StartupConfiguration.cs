@@ -14,8 +14,7 @@ namespace OpeningsTracker.JobPostingSources.Lever
                 .AddHttpClient()
                 .AddLogging()
                 .AddTransient((sp) => new LeverClient(
-                    sp.GetService<IHttpClientFactory>().CreateClient($"{typeof(LeverClient)}"),
-                    sp.GetService<IConfiguration>().GetSection("leverConfig").Get<LeverConfig>() ?? new LeverConfig()
+                    sp.GetService<IHttpClientFactory>().CreateClient($"{typeof(LeverClient)}")
                 ))
                 .AddTransient<IJobPostingSource>(sp => new LeverService(
                     sp.GetService<LeverClient>(),
