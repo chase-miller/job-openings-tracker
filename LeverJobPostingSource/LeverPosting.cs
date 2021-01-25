@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LeverJobPostingSource
+namespace OpeningsTracker.JobPostingSources.Lever
 {
     public class LeverPosting
     {

@@ -1,15 +1,14 @@
-﻿using System.Collections;
-using System.Net.Http;
-using System.Text.Json.Serialization;
+﻿using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using MoreLinq.Extensions;
-using NCrontab;
 using OpeningsTracker.Core;
+using OpeningsTracker.DataStores.JsonFile;
+using OpeningsTracker.JobPostingSources.Lever;
+using OpeningsTracker.Notifiers.EmailNotifier;
 
-namespace OpeningsTracker
+namespace OpeningsTracker.Runners.BackgroundJob
 {
     class Program
     {
@@ -30,20 +29,19 @@ namespace OpeningsTracker
                     services
                         .AddLogging()
                         .AddHttpClient()
-                        .ScanForPlugins(hostContext)
-                        .AddHostedService<CronJob>(sp => new CronJob(
+                        .AddOpeningsTrackerEmailNotifier()
+                        .AddLeverOpeningsTracker()
+                        .AddOpeningsJsonDataStore()
+                        .AddHostedService(sp => new CronJob(
                             sp.GetService<OpeningsTrackerScript>(), 
                             sp.GetService<IConfiguration>().GetSection("cronConfig").Get<CronJobConfig>() ?? new CronJobConfig(),
                             sp.GetService<ILoggerFactory>().CreateLogger<CronJob>()
                         ))
-                        .AddTransient<OpeningsTrackerScript>(sp => new OpeningsTrackerScript(
-                            sp.GetService<IJobPostingSource>(), 
-                            sp.GetService<Database>(), 
-                            sp.GetService<IConfiguration>().GetSection("scriptConfig").Get<OpeningsTrackerScriptConfig>() ?? new OpeningsTrackerScriptConfig(),
+                        .AddTransient(sp => new OpeningsTrackerScript(
+                            sp.GetServices<IJobPostingSource>().ToList(),
+                            sp.GetServices<IJobPostingNotifier>().ToList(),
+                            sp.GetService<IDataStore>(), 
                             sp.GetService<ILoggerFactory>().CreateLogger<OpeningsTrackerScript>()
-                        ))
-                        .AddTransient<Database>(sp => new Database(
-                            sp.GetService<IConfiguration>().GetValue<string>("openingsTrackerDatabaseFile")
                         ))
                 );
     }

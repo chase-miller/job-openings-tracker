@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <AssemblyName>OpeningsTracker.JobPostingSources.Lever</AssemblyName>
+    <RootNamespace>OpeningsTracker.JobPostingSources.Lever</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -17,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\Core\OpeningsTracker.Core.csproj" />
   </ItemGroup>
 
 </Project>

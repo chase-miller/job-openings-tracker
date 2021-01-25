@@ -3,6 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>OpeningsTracker.Runners.BackgroundJob</AssemblyName>
+    <RootNamespace>OpeningsTracker.Runners.BackgroundJob</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,8 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\Core.csproj" />
-    <ProjectReference Include="..\LeverJobPostingSource\LeverJobPostingSource.csproj" />
+    <ProjectReference Include="..\Core\OpeningsTracker.Core.csproj" />
+    <ProjectReference Include="..\EmailNotifier\OpeningsTracker.Notifiers.EmailNotifier.csproj" />
+    <ProjectReference Include="..\LeverJobPostingSource\OpeningsTracker.JobPostingSources.Lever.csproj" />
+    <ProjectReference Include="..\OpeningsTracker.DataStores.JsonFile\OpeningsTracker.DataStores.JsonFile.csproj" />
   </ItemGroup>
 
   <ItemGroup>

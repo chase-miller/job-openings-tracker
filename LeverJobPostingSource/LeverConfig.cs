@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace LeverJobPostingSource
+namespace OpeningsTracker.JobPostingSources.Lever
 {
     public class LeverConfig
     {

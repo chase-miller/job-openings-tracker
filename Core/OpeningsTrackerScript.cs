@@ -9,46 +9,78 @@ namespace OpeningsTracker.Core
 {
     public class OpeningsTrackerScript
     {
-        private readonly IJobPostingSource _postingSource;
-        private readonly Database _database;
-        private readonly OpeningsTrackerScriptConfig _config;
+        private readonly IList<IJobPostingSource> _postingSources;
+        private readonly IList<IJobPostingNotifier> _notifiers;
+        private readonly IDataStore _dataStore;
         private readonly ILogger<OpeningsTrackerScript> _logger;
-
-        public OpeningsTrackerScript(IJobPostingSource postingSource, Database database, OpeningsTrackerScriptConfig config, ILogger<OpeningsTrackerScript> logger)
+        
+        public OpeningsTrackerScript(IList<IJobPostingSource> postingSources, IList<IJobPostingNotifier> notifiers, IDataStore dataStore, ILogger<OpeningsTrackerScript> logger)
         {
-            _postingSource = postingSource ?? throw new ArgumentNullException(nameof(postingSource));
-            _database = database;
-            _config = config ?? throw new ArgumentNullException(nameof(config));
+            if (!postingSources.Any())
+            {
+                logger.LogCritical("No posting sources found. Have plugins been registered?");
+                throw new ApplicationException("No posting sources found. Have plugins been registered?");
+            }
+
+            if (!notifiers.Any())
+            {
+                logger.LogCritical("No notifiers found. Have plugins been registered?");
+                throw new ApplicationException("No notifiers found. Have plugins been registered?");
+            }
+
+            _postingSources = postingSources;
+            _notifiers = notifiers;
+            _dataStore = dataStore;
             _logger = logger;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            var databaseFile = await _database.GetDatabaseFile(cancellationToken);
+            var databaseFile = await _dataStore.GetDatabaseEntities(cancellationToken);
 
-            var alreadyProcessedIds = databaseFile.AlreadyProcessedIds
-                .Where(id => id.SourceSystem == _postingSource.PostingSourceId)
-                .Select(id => id.Id);
-
-            var newItems = (await _postingSource.GetPostings(cancellationToken))
-                .ExceptAlreadyProcessed(alreadyProcessedIds)
+            var newItems = (await FindNewJobPostings(databaseFile.AlreadyProcessedIds, cancellationToken))
+                // .ExceptAlreadyProcessed(alreadyProcessedIds)
                 .ToList();
 
-            var processResults = await Process(newItems);
+            var notificationResults = await Notify(newItems);
 
-            var successes = processResults
+            var successes = notificationResults
                 .Where(r => r.success)
                 .Select(r => r.posting)
                 .ToList();
 
-            await _database.MarkPostingAsProcessed(databaseFile, successes);
+            await _dataStore.MarkPostingAsProcessed(databaseFile, successes);
 
-            var errors = processResults
+            var errors = notificationResults
                 .Where(r => !r.success)
                 .Select(r => (r.posting, r.ex))
                 .ToList();
 
              ReportErrors(errors);
+        }
+
+        private async Task<List<JobPosting>> FindNewJobPostings(List<ProcessedPosting> alreadyProcessedPosting, CancellationToken cancellationToken)
+        {
+            var allNewPostings = new List<JobPosting>();
+
+            foreach (var postingSource in _postingSources)
+            {
+                var newPostings = await FindNewJobPostings(postingSource, alreadyProcessedPosting, cancellationToken);
+                allNewPostings.AddRange(newPostings);
+            }
+
+            return allNewPostings;
+        }
+
+        private async Task<List<JobPosting>> FindNewJobPostings(IJobPostingSource postingSource, List<ProcessedPosting> alreadyProcessedPosting, CancellationToken cancellationToken)
+        {
+            var alreadyProcessedIds = alreadyProcessedPosting
+                .Where(id => id.SourceSystem == postingSource.PostingSourceId)
+                .Select(id => id.Id);
+
+            return (await postingSource.GetPostings(cancellationToken))
+                .ExceptAlreadyProcessed(alreadyProcessedIds)
+                .ToList();
         }
 
         private void ReportErrors(IList<(JobPosting posting, Exception ex)> errors)
@@ -64,7 +96,7 @@ namespace OpeningsTracker.Core
             }
         }
 
-        private async Task<List<(JobPosting posting, bool success, Exception ex)>> Process(IList<JobPosting> postings)
+        private async Task<List<(JobPosting posting, bool success, Exception ex)>> Notify(IList<JobPosting> postings)
         {
             if (!postings.Any())
             {
@@ -72,28 +104,15 @@ namespace OpeningsTracker.Core
                 return new List<(JobPosting posting, bool success, Exception ex)>();
             }
 
-            var results = new List<(JobPosting posting, bool success, Exception ex)>();
+            var notificationResults = new List<(JobPosting posting, bool success, Exception ex)>();
 
-            foreach (var posting in postings)
+            foreach (var notifier in _notifiers)
             {
-                try
-                {
-                    Console.WriteLine();
-                    Console.WriteLine($"{posting.Text} ({posting.Id} / {posting.CreatedAtDTime:g})");
-                    Console.WriteLine($"{posting.DepartmentTeamGroup}");
-                    Console.WriteLine($"{posting.HostedUrl}");
-
-                    _logger.LogInformation($"Processed posting with id {posting.Id}");
-
-                    results.Add((posting, true, null));
-                }
-                catch (Exception ex)
-                {
-                    results.Add((posting, false, ex));
-                }
+                var result = await notifier.Notify(postings);
+                notificationResults.AddRange(result);
             }
 
-            return results;
+            return notificationResults;
         }
     }
 
@@ -108,11 +127,5 @@ namespace OpeningsTracker.Core
                 alreadyProcessedId => alreadyProcessedId
             );
         }
-    }
-
-    public class OpeningsTrackerScriptConfig
-    {
-        public IList<string> DepartmentBlacklist { get; set; } = new List<string>();
-        public IList<string> TeamBlacklist { get; set; } = new List<string>();
     }
 }

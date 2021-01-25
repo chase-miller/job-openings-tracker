@@ -3,8 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OpeningsTracker.Core;
 
-namespace OpeningsTracker.Core
+namespace OpeningsTracker.Runners.BackgroundJob
 {
     public class CronJobConfig
     {
@@ -29,14 +30,14 @@ namespace OpeningsTracker.Core
         {
             if (_config.OnlyRunOnce)
             {
-                await _script.StartAsync(stoppingToken);
+                await _script.ExecuteAsync(stoppingToken);
                 _logger.LogWarning("End of script (OnlyRunOnce is set to true)");
                 return;
             }
 
             do
             {
-                await _script.StartAsync(stoppingToken);
+                await _script.ExecuteAsync(stoppingToken);
                 _logger.LogInformation($"Waiting {_config.JobFrequencyTimespan:g} until next run...");
                 await Task.Delay(_config.JobFrequencyTimespan, stoppingToken);
             } while (!stoppingToken.IsCancellationRequested);

@@ -3,11 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30104.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpeningsTracker", "OpeningsTracker\OpeningsTracker.csproj", "{D9387512-1BE9-4B9C-8D67-32229924436A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpeningsTracker.Runners.BackgroundJob", "OpeningsTracker\OpeningsTracker.Runners.BackgroundJob.csproj", "{D9387512-1BE9-4B9C-8D67-32229924436A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeverJobPostingSource", "LeverJobPostingSource\LeverJobPostingSource.csproj", "{CE5BDEE0-204B-4A59-8D36-A0EAFFAC5DC2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpeningsTracker.JobPostingSources.Lever", "LeverJobPostingSource\OpeningsTracker.JobPostingSources.Lever.csproj", "{CE5BDEE0-204B-4A59-8D36-A0EAFFAC5DC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{977159FA-922E-445A-94D0-51D53B3DE681}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpeningsTracker.Core", "Core\OpeningsTracker.Core.csproj", "{977159FA-922E-445A-94D0-51D53B3DE681}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpeningsTracker.Notifiers.EmailNotifier", "EmailNotifier\OpeningsTracker.Notifiers.EmailNotifier.csproj", "{291CEC5C-F1BD-42D0-9217-09A397C69A0F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicPluginLoader", "DynamicPluginLoader\DynamicPluginLoader.csproj", "{5ADA19F2-3CF2-4727-A0B6-FCA93DA31E14}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpeningsTracker.DataStores.JsonFile", "OpeningsTracker.DataStores.JsonFile\OpeningsTracker.DataStores.JsonFile.csproj", "{902E3041-1B79-49D3-8FCF-38D324787132}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +33,18 @@ Global
 		{977159FA-922E-445A-94D0-51D53B3DE681}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{977159FA-922E-445A-94D0-51D53B3DE681}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{977159FA-922E-445A-94D0-51D53B3DE681}.Release|Any CPU.Build.0 = Release|Any CPU
+		{291CEC5C-F1BD-42D0-9217-09A397C69A0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{291CEC5C-F1BD-42D0-9217-09A397C69A0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{291CEC5C-F1BD-42D0-9217-09A397C69A0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{291CEC5C-F1BD-42D0-9217-09A397C69A0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5ADA19F2-3CF2-4727-A0B6-FCA93DA31E14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5ADA19F2-3CF2-4727-A0B6-FCA93DA31E14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5ADA19F2-3CF2-4727-A0B6-FCA93DA31E14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5ADA19F2-3CF2-4727-A0B6-FCA93DA31E14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{902E3041-1B79-49D3-8FCF-38D324787132}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{902E3041-1B79-49D3-8FCF-38D324787132}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{902E3041-1B79-49D3-8FCF-38D324787132}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{902E3041-1B79-49D3-8FCF-38D324787132}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

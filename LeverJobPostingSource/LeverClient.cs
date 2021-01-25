@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using OpeningsTracker.Core;
 
-namespace LeverJobPostingSource
+namespace OpeningsTracker.JobPostingSources.Lever
 {
     public class LeverClient
     {
