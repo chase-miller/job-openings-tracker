@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using MoreLinq.Extensions;
 
 namespace OpeningsTracker.Core
 {
@@ -47,6 +48,7 @@ namespace OpeningsTracker.Core
             var successes = notificationResults
                 .Where(r => r.success)
                 .Select(r => r.posting)
+                .DistinctBy(posting => posting.Id)            // prevent duplicates as a result of multiple notifiers return results
                 .ToList();
 
             await _dataStore.MarkPostingAsProcessed(databaseFile, successes);
@@ -108,8 +110,8 @@ namespace OpeningsTracker.Core
 
             foreach (var notifier in _notifiers)
             {
-                var result = await notifier.Notify(postings, cancellationToken);
-                notificationResults.AddRange(result);
+                var results = await notifier.Notify(postings, cancellationToken);
+                notificationResults.AddRange(results);
             }
 
             return notificationResults;

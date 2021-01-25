@@ -25,7 +25,7 @@ namespace OpeningsTracker.Core
 
     public class ProcessedPosting
     {
-        public string SourceSystem { get; set; }
         public string Id { get; set; }
+        public string SourceSystem { get; set; }
     }
 }

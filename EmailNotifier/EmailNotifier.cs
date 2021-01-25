@@ -6,6 +6,8 @@ using MailKit.Net.Smtp;
 using Microsoft.Extensions.Logging;
 using MimeKit;
 using OpeningsTracker.Core;
+using Polly;
+using Polly.Retry;
 
 namespace OpeningsTracker.Notifiers.EmailNotifier
 {
@@ -13,6 +15,14 @@ namespace OpeningsTracker.Notifiers.EmailNotifier
     {
         private readonly ILogger<EmailNotifier> _logger;
         private readonly EmailNotifierConfig _config;
+
+        private static readonly Random Jitterer = new Random();
+        private static readonly AsyncRetryPolicy RetryPolicy = Policy
+            .Handle<Exception>()
+            .WaitAndRetryAsync(6,    // exponential back-off plus some jitter
+                retryAttempt => TimeSpan.FromMilliseconds(Math.Pow(400, retryAttempt))
+                                + TimeSpan.FromMilliseconds(Jitterer.Next(0, 100))
+            );
 
         public EmailNotifier(ILogger<EmailNotifier> logger, EmailNotifierConfig config)
         {
@@ -33,11 +43,12 @@ namespace OpeningsTracker.Notifiers.EmailNotifier
                     Console.WriteLine($"{posting.DepartmentTeamGroup}");
                     Console.WriteLine($"{posting.HostedUrl}");
 
-                    await SendEmail(posting, cancellationToken);
+                    await RetryPolicy.ExecuteAsync(
+                        ct => SendEmail(posting, ct), 
+                        cancellationToken
+                    );
 
                     _logger.LogInformation($"Processed posting with id {posting.Id}");
-
-
 
                     results.Add((posting, true, null));
                 }
