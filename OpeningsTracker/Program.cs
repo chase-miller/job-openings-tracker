@@ -26,13 +26,13 @@ namespace OpeningsTracker.Runners.BackgroundJob
                         .SetMinimumLevel(LogLevel.Information)
                         .AddConsole()
                 )
-                .ConfigureHostConfiguration(builder =>
+                .ConfigureAppConfiguration(builder =>
+                {
                     builder
-                        .AddJsonFile("appsettings.json")
-                        .AddJsonFile(Environment.GetEnvironmentVariable("OpeningsTracker_SettingsFileLocation") ?? "/dev/null/fake.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile(Environment.GetEnvironmentVariable("OpeningsTracker_SettingsFileLocation") ?? "/dev/null/fake.json", optional: true)
                         .AddEnvironmentVariables(prefix: "OpeningsTracker_")
-                        .AddCommandLine(args)
-                )
+                        .AddCommandLine(args);
+                })
                 .ConfigureServices((hostContext, services) =>
                     services
                         .AddLogging()

@@ -65,7 +65,7 @@ namespace OpeningsTracker.Notifiers.EmailNotifier
 
             using var client = new SmtpClient();
 
-            await client.ConnectAsync(_config.SmtpHost, 587, false, cancellationToken);
+            await client.ConnectAsync(_config.SmtpHost, _config.SmtpPort ?? 587, _config.UseSsl, cancellationToken);
 
             // Note: only needed if the SMTP server requires authentication
             if (_config.RequiresSmtpAuth)

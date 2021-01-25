@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MailKit.Security;
 
 namespace OpeningsTracker.Notifiers.EmailNotifier
 {
@@ -14,5 +15,7 @@ namespace OpeningsTracker.Notifiers.EmailNotifier
         public string SmtpUser { get; set; }
         public string SmtpPassword { get; set; }
         public bool RequiresSmtpAuth { get; set; }
+        public int? SmtpPort { get; set; }
+        public bool UseSsl { get; set; }
     }
 }
