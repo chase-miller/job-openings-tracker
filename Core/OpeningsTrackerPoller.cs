@@ -8,14 +8,14 @@ using MoreLinq.Extensions;
 
 namespace OpeningsTracker.Core
 {
-    public class OpeningsTrackerScript
+    public class OpeningsTrackerPoller
     {
         private readonly IList<IJobPostingSource> _postingSources;
         private readonly IList<IJobPostingNotifier> _notifiers;
         private readonly IDataStore _dataStore;
-        private readonly ILogger<OpeningsTrackerScript> _logger;
+        private readonly ILogger<OpeningsTrackerPoller> _logger;
         
-        public OpeningsTrackerScript(IList<IJobPostingSource> postingSources, IList<IJobPostingNotifier> notifiers, IDataStore dataStore, ILogger<OpeningsTrackerScript> logger)
+        public OpeningsTrackerPoller(IList<IJobPostingSource> postingSources, IList<IJobPostingNotifier> notifiers, IDataStore dataStore, ILogger<OpeningsTrackerPoller> logger)
         {
             if (!postingSources.Any())
             {

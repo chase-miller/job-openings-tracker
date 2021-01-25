@@ -41,15 +41,15 @@ namespace OpeningsTracker.Runners.BackgroundJob
                         .AddLeverOpeningsTracker()
                         .AddOpeningsJsonDataStore()
                         .AddHostedService(sp => new CronJob(
-                            sp.GetService<OpeningsTrackerScript>(), 
+                            sp.GetService<OpeningsTrackerPoller>(), 
                             sp.GetService<IConfiguration>().GetSection("cronConfig").Get<CronJobConfig>() ?? new CronJobConfig(),
                             sp.GetService<ILoggerFactory>().CreateLogger<CronJob>()
                         ))
-                        .AddTransient(sp => new OpeningsTrackerScript(
+                        .AddTransient(sp => new OpeningsTrackerPoller(
                             sp.GetServices<IJobPostingSource>().ToList(),
                             sp.GetServices<IJobPostingNotifier>().ToList(),
                             sp.GetService<IDataStore>(), 
-                            sp.GetService<ILoggerFactory>().CreateLogger<OpeningsTrackerScript>()
+                            sp.GetService<ILoggerFactory>().CreateLogger<OpeningsTrackerPoller>()
                         ))
                 );
     }
