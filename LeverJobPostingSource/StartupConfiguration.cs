@@ -13,13 +13,13 @@ namespace OpeningsTracker.JobPostingSources.Lever
             return services
                 .AddHttpClient()
                 .AddLogging()
-                .AddTransient<LeverClient>((sp) => new LeverClient(
+                .AddTransient((sp) => new LeverClient(
                     sp.GetService<IHttpClientFactory>().CreateClient($"{typeof(LeverClient)}"),
-                    sp.GetService<IConfiguration>().GetSection("leverClientConfig").Get<LeverConfig>() ?? new LeverConfig()
+                    sp.GetService<IConfiguration>().GetSection("leverConfig").Get<LeverConfig>() ?? new LeverConfig()
                 ))
                 .AddTransient<IJobPostingSource>(sp => new LeverService(
                     sp.GetService<LeverClient>(),
-                    sp.GetService<IConfiguration>().GetSection("leverClientConfig").Get<LeverConfig>() ?? new LeverConfig()
+                    sp.GetService<IConfiguration>().GetSection("leverConfig").Get<LeverConfig>() ?? new LeverConfig()
                 ))
                 ;
         }

@@ -13,7 +13,7 @@ namespace OpeningsTracker.DataStores.JsonFile
         {
             return services
                 .AddTransient<IDataStore>(sp => new DataStore(
-                    sp.GetService<IConfiguration>().GetValue<string>("openingsTrackerDatabaseFile")
+                    sp.GetService<IConfiguration>().GetSection("jsonDataStoreConfig").Get<JsonDataStoreConfig>() ?? new JsonDataStoreConfig()
                 ));
         }
         

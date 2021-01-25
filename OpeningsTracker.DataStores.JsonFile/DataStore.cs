@@ -18,8 +18,9 @@ namespace OpeningsTracker.DataStores.JsonFile
             WriteIndented = true,
         };
 
-        public DataStore(string fileLocation)
+        public DataStore(JsonDataStoreConfig jsonDataStoreConfig)
         {
+            var fileLocation = jsonDataStoreConfig.OpeningsTrackerDatabaseFile;
             _fileLocation = fileLocation ?? throw new ArgumentNullException(nameof(fileLocation));
         }
 
