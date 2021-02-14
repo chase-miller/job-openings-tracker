@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using OpeningsTracker.Core;
+using OpeningsTracker.Core.Models;
 
 namespace OpeningsTracker.JobPostingSources.Lever
 {
@@ -54,6 +55,6 @@ namespace OpeningsTracker.JobPostingSources.Lever
             return postings;
         }
 
-        public string PostingSourceId => "Lever_00cb6681d5934702aaf613bf59f32880";
+        public string PostingSourceId => "LeverSource";
     }
 }

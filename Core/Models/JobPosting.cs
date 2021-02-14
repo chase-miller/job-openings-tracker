@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpeningsTracker.Core
+namespace OpeningsTracker.Core.Models
 {
     public class JobPosting
     {

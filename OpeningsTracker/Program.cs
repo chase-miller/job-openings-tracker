@@ -34,23 +34,30 @@ namespace OpeningsTracker.Runners.BackgroundJob
                         .AddCommandLine(args);
                 })
                 .ConfigureServices((hostContext, services) =>
+                {
+                    var myConfig = hostContext.Configuration.GetSection("backgroundJob").Get<Config>() ?? new Config();
+
                     services
                         .AddLogging()
                         .AddHttpClient()
-                        .AddOpeningsTrackerEmailNotifier()
-                        .AddLeverOpeningsTracker()
+                        .AddIf(
+                            services => services.AddOpeningsTrackerEmailNotifier(),
+                            () => myConfig.ActiveNotifiers.Contains("EmailNotifier"))
+                        .AddIf(
+                            services => services.AddLeverOpeningsTracker(),
+                            () => myConfig.ActiveSources.Contains("LeverSource"))
                         .AddOpeningsJsonDataStore()
                         .AddHostedService(sp => new CronJob(
-                            sp.GetService<OpeningsTrackerPoller>(), 
+                            sp.GetService<OpeningsTrackerPoller>(),
                             sp.GetService<IConfiguration>().GetSection("cronConfig").Get<CronJobConfig>() ?? new CronJobConfig(),
                             sp.GetService<ILoggerFactory>().CreateLogger<CronJob>()
                         ))
                         .AddTransient(sp => new OpeningsTrackerPoller(
                             sp.GetServices<IJobPostingSource>().ToList(),
                             sp.GetServices<IJobPostingNotifier>().ToList(),
-                            sp.GetService<IDataStore>(), 
+                            sp.GetService<IDataStore>(),
                             sp.GetService<ILoggerFactory>().CreateLogger<OpeningsTrackerPoller>()
-                        ))
-                );
+                        ));
+                });
     }
 }

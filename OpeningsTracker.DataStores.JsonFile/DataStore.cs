@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using OpeningsTracker.Core;
+using OpeningsTracker.Core.Models;
 
 namespace OpeningsTracker.DataStores.JsonFile
 {
@@ -13,7 +14,7 @@ namespace OpeningsTracker.DataStores.JsonFile
     {
         private readonly string _fileLocation;
 
-        JsonSerializerOptions options = new JsonSerializerOptions
+        private readonly JsonSerializerOptions _options = new JsonSerializerOptions
         {
             WriteIndented = true,
         };
@@ -24,26 +25,20 @@ namespace OpeningsTracker.DataStores.JsonFile
             _fileLocation = fileLocation ?? throw new ArgumentNullException(nameof(fileLocation));
         }
 
-        public async Task<DatabaseEntitiesV1> GetDatabaseEntities(CancellationToken token)
+        public async Task<List<ProcessedPosting>> GetProcessedPostings(Func<IQueryable<ProcessedPosting>, IQueryable<ProcessedPosting>> queryFunc, CancellationToken token)
         {
-            if (!File.Exists(_fileLocation))
-                return await WriteDatabase(new DatabaseEntitiesV1());
+            var dbObj = await GetCreateDatabaseContent(token);
 
-            using var openStream = File.OpenRead(_fileLocation);
-            return await JsonSerializer.DeserializeAsync<DatabaseEntitiesV1>(openStream, null, token);
+            var query = queryFunc(dbObj.AlreadyProcessedIds.AsQueryable());
+
+            return query.ToList();
         }
 
-        public async Task MarkPostingAsProcessed(DatabaseEntitiesV1 entities, IEnumerable<JobPosting> processedPostings)
+        public async Task AddProcessedPostings(IEnumerable<ProcessedPosting> processedPostings, CancellationToken token)
         {
-            var converted = processedPostings
-                .Select(p => new ProcessedPosting
-                {
-                    Id = p.Id,
-                    SourceSystem = p.SourceSystemId
-                })
-                .ToList();
+            var entities = await GetCreateDatabaseContent(token);
 
-            entities.AlreadyProcessedIds.AddRange(converted);
+            entities.AlreadyProcessedIds.AddRange(processedPostings);
 
             await WriteDatabase(entities);
         }
@@ -52,11 +47,20 @@ namespace OpeningsTracker.DataStores.JsonFile
         {
             using var writer = File.CreateText(_fileLocation);
 
-            var jsonString = JsonSerializer.Serialize(entities, options);
+            var jsonString = JsonSerializer.Serialize(entities, _options);
 
             await writer.WriteAsync(jsonString);
 
             return entities;
+        }
+
+        private async Task<DatabaseEntitiesV1> GetCreateDatabaseContent(CancellationToken token)
+        {
+            if (!File.Exists(_fileLocation))
+                return await WriteDatabase(new DatabaseEntitiesV1());
+
+            using var openStream = File.OpenRead(_fileLocation);
+            return await JsonSerializer.DeserializeAsync<DatabaseEntitiesV1>(openStream, null, token);
         }
     }
 }

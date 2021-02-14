@@ -6,6 +6,7 @@ using MailKit.Net.Smtp;
 using Microsoft.Extensions.Logging;
 using MimeKit;
 using OpeningsTracker.Core;
+using OpeningsTracker.Core.Models;
 using Polly;
 using Polly.Retry;
 
@@ -23,6 +24,8 @@ namespace OpeningsTracker.Notifiers.EmailNotifier
                 retryAttempt => TimeSpan.FromMilliseconds(Math.Pow(400, retryAttempt))
                                 + TimeSpan.FromMilliseconds(Jitterer.Next(0, 100))
             );
+
+        public string NotifierId => "EmailNotifier";
 
         public EmailNotifier(ILogger<EmailNotifier> logger, EmailNotifierConfig config)
         {
