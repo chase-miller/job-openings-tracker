@@ -71,10 +71,9 @@ namespace OpeningsTracker.Notifiers.EmailNotifier
             message.To.Add(new MailboxAddress(_config.ToName, _config.ToAddress));
             message.Subject = $"New Job Posting - {posting.ShortDescription}";
 
-            // TODO - make this html...and what you'd actually want.
             message.Body = new TextPart("plain")
             {
-                Text = posting.Text
+                Text = posting.ToPlaintextEmailBody()
             };
 
             using var client = new SmtpClient();
