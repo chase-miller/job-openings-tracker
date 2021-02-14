@@ -44,9 +44,6 @@ namespace OpeningsTracker.Core
 
             var newItems = await FindNewJobPostings(alreadyProcessed, cancellationToken);
 
-            // TODO - delete me!!
-            newItems = newItems.Take(1).ToList();
-
             var notificationResults = await Notify(newItems, cancellationToken);
 
             // For now a given posting's success from any notification system is a success for all. Consider changing this.

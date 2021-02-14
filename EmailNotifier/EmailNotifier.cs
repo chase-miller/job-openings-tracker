@@ -37,6 +37,14 @@ namespace OpeningsTracker.Notifiers.EmailNotifier
         {
             var results = new List<(JobPosting posting, bool success, Exception ex)>();
 
+            using var client = new SmtpClient();
+
+            await client.ConnectAsync(_config.SmtpHost, _config.SmtpPort ?? 587, _config.UseSsl, cancellationToken);
+
+            // Note: only needed if the SMTP server requires authentication
+            if (_config.RequiresSmtpAuth)
+                await client.AuthenticateAsync(_config.SmtpUser, _config.SmtpPassword, cancellationToken);
+
             foreach (var posting in postings)
             {
                 try
@@ -46,8 +54,18 @@ namespace OpeningsTracker.Notifiers.EmailNotifier
                     Console.WriteLine($"{posting.DepartmentTeamGroup}");
                     Console.WriteLine($"{posting.HostedUrl}");
 
+                    var message = new MimeMessage();
+                    message.From.Add(new MailboxAddress(_config.FromName, _config.FromAddress));
+                    message.To.Add(new MailboxAddress(_config.ToName, _config.ToAddress));
+                    message.Subject = $"New Job Posting - {posting.ShortDescription}";
+
+                    message.Body = new TextPart("plain")
+                    {
+                        Text = posting.ToPlaintextEmailBody()
+                    };
+
                     await RetryPolicy.ExecuteAsync(
-                        ct => SendEmail(posting, ct), 
+                        ct => client.SendAsync(message, ct),
                         cancellationToken
                     );
 
@@ -61,31 +79,9 @@ namespace OpeningsTracker.Notifiers.EmailNotifier
                 }
             }
 
-            return results;
-        }
-
-        private async Task SendEmail(JobPosting posting, CancellationToken cancellationToken)
-        {
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(_config.FromName, _config.FromAddress));
-            message.To.Add(new MailboxAddress(_config.ToName, _config.ToAddress));
-            message.Subject = $"New Job Posting - {posting.ShortDescription}";
-
-            message.Body = new TextPart("plain")
-            {
-                Text = posting.ToPlaintextEmailBody()
-            };
-
-            using var client = new SmtpClient();
-
-            await client.ConnectAsync(_config.SmtpHost, _config.SmtpPort ?? 587, _config.UseSsl, cancellationToken);
-
-            // Note: only needed if the SMTP server requires authentication
-            if (_config.RequiresSmtpAuth)
-                await client.AuthenticateAsync(_config.SmtpUser, _config.SmtpPassword, cancellationToken);
-
-            await client.SendAsync(message, cancellationToken);
             await client.DisconnectAsync(true, cancellationToken);
+
+            return results;
         }
     }
 }
