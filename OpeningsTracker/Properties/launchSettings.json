@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "OpeningsTracker.Runners.BackgroundJob": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
