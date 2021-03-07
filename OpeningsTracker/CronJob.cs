@@ -18,6 +18,7 @@ namespace OpeningsTracker.Runners.BackgroundJob
         private readonly OpeningsTrackerPoller _poller;
         private readonly CronJobConfig _config;
         private readonly ILogger<CronJob> _logger;
+        private readonly Random _random = new Random();
 
         public CronJob(OpeningsTrackerPoller poller, CronJobConfig config, ILogger<CronJob> logger)
         {
@@ -38,9 +39,17 @@ namespace OpeningsTracker.Runners.BackgroundJob
             do
             {
                 await _poller.ExecuteAsync(stoppingToken);
-                _logger.LogInformation($"Waiting {_config.JobFrequencyTimespan:g} until next run...");
-                await Task.Delay(_config.JobFrequencyTimespan, stoppingToken);
+                
+                var waitTime = NextExecution();
+                _logger.LogInformation($"Waiting {waitTime:g} until next run...");
+                await Task.Delay(waitTime, stoppingToken);
             } while (!stoppingToken.IsCancellationRequested);
+
+            TimeSpan NextExecution()
+            {
+                var randomSeconds = _random.Next(0, 120);
+                return _config.JobFrequencyTimespan.Add(TimeSpan.FromSeconds(randomSeconds));
+            }
         }
     }
 }
